@@ -63,7 +63,7 @@ export const orthographyCheckUseCase = async( ai: OpenAI /*GoogleGenAI */, optio
         thinking: { type: "disabled" },
     } as any);
 
-    console.log(completion);
+    //console.log(completion);
 
     const content = completion.choices[0].message.content;
 
