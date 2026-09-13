@@ -35,9 +35,9 @@ export const textToAudioUseCase = async ( openai: OpenAI, containerClient: Conta
     const buffer = Buffer.from( await mp3.arrayBuffer() );
     const fileId = `${ new Date().getTime() }`;
 
-    // Si hay containerClient de Azure configurado, se guarda ahí; si no, se usa disco local como respaldo.
+    // Si hay containerClient de Azure configurado, se guarda ahí bajo el prefijo "audios/" (carpeta virtual, igual que en local); si no, se usa disco local como respaldo.
     if ( containerClient ) {
-        const blockBlobClient = containerClient.getBlockBlobClient( `${ fileId }.mp3` );
+        const blockBlobClient = containerClient.getBlockBlobClient( `audios/${ fileId }.mp3` );
         await blockBlobClient.uploadData( buffer, {
             blobHTTPHeaders: { blobContentType: 'audio/mp3' },
         });

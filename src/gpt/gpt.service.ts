@@ -67,7 +67,7 @@ export class GptService {
 
     async textToAudioGetter( fileId: string ){
         if ( this.containerClient ) {
-            const blockBlobClient = this.containerClient.getBlockBlobClient( `${ fileId }.mp3` );
+            const blockBlobClient = this.containerClient.getBlockBlobClient( `audios/${ fileId }.mp3` );
             const wasFound = await blockBlobClient.exists();
 
             if( !wasFound ) throw new NotFoundException(`File ${ fileId } not found`);
@@ -85,6 +85,6 @@ export class GptService {
 
     async audioToText( audioFile: Express.Multer.File, audioToTextDto: AudioToTextDto ){
         const { prompt } = audioToTextDto;
-        return await audioToTextUseCase( this.openAi, { audioFile, prompt })
-    }    
+        return await audioToTextUseCase( this.openAi, this.containerClient, { audioFile, prompt })
+    }
 }
