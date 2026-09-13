@@ -4,10 +4,10 @@ import { fileURLToPath } from 'url';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { orthographyCheckUseCase } from './use-cases/orthography.use-case.js';
-import { OrthographyDto, ProsConsDicusserDto, TextToAudioDto, TranslateDto } from './dtos/index.js';
+import { AudioToTextDto, OrthographyDto, ProsConsDicusserDto, TextToAudioDto, TranslateDto } from './dtos/index.js';
 import OpenAI from "openai";
 import { prosConsDicusserUseCase } from './use-cases/prosconsdiscusser.use-case.js';
-import { prosConsDicusserStreamUseCase, translateUseCase } from './use-cases/index.js';
+import { audioToTextUseCase, prosConsDicusserStreamUseCase, translateUseCase } from './use-cases/index.js';
 import { textToAudioUseCase } from './use-cases/text-to-audio.use-case.js';
 
 const __filename = fileURLToPath( import.meta.url );
@@ -82,4 +82,9 @@ export class GptService {
 
         return fs.readFileSync( filePath );
     }
+
+    async audioToText( audioFile: Express.Multer.File, audioToTextDto: AudioToTextDto ){
+        const { prompt } = audioToTextDto;
+        return await audioToTextUseCase( this.openAi, { audioFile, prompt })
+    }    
 }
