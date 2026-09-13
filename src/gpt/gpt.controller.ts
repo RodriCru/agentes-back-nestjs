@@ -53,11 +53,12 @@ export class GptController {
     @Body() textToAudioDto: TextToAudioDto,
     @Res() res: Response,
   ){
-    const filePath = await this.gptService.textToAudio(textToAudioDto);
+    const { fileId, buffer } = await this.gptService.textToAudio(textToAudioDto);
 
     res.setHeader( 'Content-Type', 'audio/mp3');
+    res.setHeader( 'X-File-Id', fileId);
     res.status(HttpStatus.OK);
-    res.sendFile(filePath);
+    res.send(buffer);
   }
 
   @Get('text-to-audio/:fileId')
@@ -65,10 +66,10 @@ export class GptController {
     @Param('fileId') fileId: string,
     @Res() res: Response,
   ){
-    const filePath = await this.gptService.textToAudioGetter(fileId);
+    const buffer = await this.gptService.textToAudioGetter(fileId);
 
     res.setHeader( 'Content-Type', 'audio/mp3');
     res.status(HttpStatus.OK);
-    res.sendFile(filePath);
+    res.send(buffer);
   }
 }

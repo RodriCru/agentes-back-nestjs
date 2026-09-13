@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import type { ContainerClient } from "@azure/storage-blob";
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -11,7 +12,7 @@ interface Options {
     voice?: string;
 }
 
-export const textToAudioUseCase = async ( openai: OpenAI, { prompt, voice }: Options ) => {
+export const textToAudioUseCase = async ( openai: OpenAI, containerClient: ContainerClient | null, { prompt, voice }: Options ) => {
 
     const voices: Record<string, string> = {
         nova: 'nova',
@@ -24,11 +25,6 @@ export const textToAudioUseCase = async ( openai: OpenAI, { prompt, voice }: Opt
 
     const selectedVoice = voices[voice ?? 'nova'] ?? 'nova';
 
-    const folderPath = path.resolve( __dirname, '../../../generated/audios');
-    const speechFile = path.resolve( `${ folderPath }/${ new Date().getTime() }.mp3` );
-
-    fs.mkdirSync( folderPath, { recursive: true } );
-
     const mp3 = await openai.audio.speech.create({
         model: 'gpt-4o-mini-tts',
         voice: selectedVoice,
@@ -36,10 +32,22 @@ export const textToAudioUseCase = async ( openai: OpenAI, { prompt, voice }: Opt
         response_format:'mp3',
     });
 
-    //console.log(mp3);
-
     const buffer = Buffer.from( await mp3.arrayBuffer() );
-    fs.writeFileSync( speechFile, buffer);
+    const fileId = `${ new Date().getTime() }`;
 
-    return speechFile;
+    // Si hay containerClient de Azure configurado, se guarda ahí; si no, se usa disco local como respaldo.
+    if ( containerClient ) {
+        const blockBlobClient = containerClient.getBlockBlobClient( `${ fileId }.mp3` );
+        await blockBlobClient.uploadData( buffer, {
+            blobHTTPHeaders: { blobContentType: 'audio/mp3' },
+        });
+
+        return { fileId, buffer };
+    }
+
+    const folderPath = path.resolve( __dirname, '../../../generated/audios');
+    fs.mkdirSync( folderPath, { recursive: true } );
+    fs.writeFileSync( path.resolve( folderPath, `${ fileId }.mp3` ), buffer );
+
+    return { fileId, buffer };
 }
