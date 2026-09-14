@@ -4,10 +4,10 @@ import { fileURLToPath } from 'url';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { orthographyCheckUseCase } from './use-cases/orthography.use-case.js';
-import { AudioToTextDto, OrthographyDto, ProsConsDicusserDto, TextToAudioDto, TranslateDto } from './dtos/index.js';
+import { AudioToTextDto, ImageGenerationDto, ImageVariationDto, OrthographyDto, ProsConsDicusserDto, TextToAudioDto, TranslateDto } from './dtos/index.js';
 import OpenAI from "openai";
 import { prosConsDicusserUseCase } from './use-cases/prosconsdiscusser.use-case.js';
-import { audioToTextUseCase, prosConsDicusserStreamUseCase, translateUseCase } from './use-cases/index.js';
+import { audioToTextUseCase, imageGenerationUseCase, imageVariationUseCase, prosConsDicusserStreamUseCase, translateUseCase } from './use-cases/index.js';
 import { textToAudioUseCase } from './use-cases/text-to-audio.use-case.js';
 
 const __filename = fileURLToPath( import.meta.url );
@@ -86,5 +86,31 @@ export class GptService {
     async audioToText( audioFile: Express.Multer.File, audioToTextDto: AudioToTextDto ){
         const { prompt } = audioToTextDto;
         return await audioToTextUseCase( this.openAi, this.containerClient, { audioFile, prompt })
+    }
+
+    async imageGeneration( imageGeneratioDto: ImageGenerationDto){
+        return imageGenerationUseCase( this.openAi, this.containerClient, { ...imageGeneratioDto });
+    }
+
+    async generationImageGetter( fileName: string ){
+        if ( this.containerClient ) {
+            const blockBlobClient = this.containerClient.getBlockBlobClient( `images/${ fileName }` );
+            const wasFound = await blockBlobClient.exists();
+
+            if( !wasFound ) throw new NotFoundException(`File ${ fileName } not found`);
+
+            return await blockBlobClient.downloadToBuffer();
+        }
+
+        const filePath = path.resolve( __dirname, '../../generated/images', `${ fileName }` );
+        const wasFound = fs.existsSync( filePath );
+
+        if( !wasFound ) throw new NotFoundException(`File ${ fileName } not found`);
+
+        return fs.readFileSync( filePath );
+    }
+
+    async generatedImageVariation( { baseImage }: ImageVariationDto ){
+        return imageVariationUseCase(this.openAi, this.containerClient ,{ baseImage });
     }
 }

@@ -3,6 +3,7 @@ import type { ContainerClient } from "@azure/storage-blob";
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { randomUUID } from "crypto";
 
 const __filename = fileURLToPath( import.meta.url );
 const __dirname = path.dirname( __filename );
@@ -33,7 +34,7 @@ export const textToAudioUseCase = async ( openai: OpenAI, containerClient: Conta
     });
 
     const buffer = Buffer.from( await mp3.arrayBuffer() );
-    const fileId = `${ new Date().getTime() }`;
+    const fileId = `${randomUUID()}-${Date.now()}`;
 
     // Si hay containerClient de Azure configurado, se guarda ahí bajo el prefijo "audios/" (carpeta virtual, igual que en local); si no, se usa disco local como respaldo.
     if ( containerClient ) {
