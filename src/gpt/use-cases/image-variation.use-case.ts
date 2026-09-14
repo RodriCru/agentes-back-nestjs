@@ -23,7 +23,7 @@ export const imageVariationUseCase = async (openai: OpenAI,containerClient: Cont
     const response = await openai.images.edit({
         model: 'gpt-image-1-mini',
         image: imageFile,
-        prompt: 'Genera una variación creativa de la imagen, manteniendo el estilo y sujeto, pero con diferente composición o detalles',
+        prompt: 'Haz una variación creativa de esta imagen, manteniendo el estilo y sujeto, pero con diferente composición, detalles o colores',
         quality:'low',
         //n: 1,
         //size: '1024x1024'
