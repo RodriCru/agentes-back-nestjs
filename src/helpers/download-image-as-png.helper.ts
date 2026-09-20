@@ -15,7 +15,7 @@ export const downloadImageAsPng = async ( url: string, fullPath: boolean = false
     const folderPath = path.resolve('./', '.generated/images/');
     fs.mkdirSync(folderPath, { recursive: true });
 
-    const imageNamePng = `${randomUUID()}-${Date.now()}`;
+    const imageNamePng = `${randomUUID()}-${Date.now()}.png`;
     const buffer = Buffer.from(await response.arrayBuffer());
 
     const completePath = path.join(folderPath, imageNamePng);

@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import OpenAI, { toFile } from "openai";
 import type { ContainerClient } from "@azure/storage-blob";
 import * as fs from 'fs';
 import * as path from 'path';
@@ -74,12 +74,19 @@ export const imageGenerationUseCase = async( openai: OpenAI, containerClient: Co
 
     const pngImagePath = await downloadImageAsPng(originalImage, true);
     const maskPath = await downloadBase64ImageAsPng( maskImage, true );
-    
+
+    const imageFile = await toFile( fs.createReadStream(pngImagePath), null, {
+        type: 'image/png',
+    } );
+    const maskFile = await toFile( fs.createReadStream(maskPath), null, {
+        type: 'image/png',
+    } );
+
     const response = await openai.images.edit({
         model: 'gpt-image-1-mini',
         prompt: prompt,
-        image: fs.createReadStream(pngImagePath),
-        mask: fs.createReadStream(maskPath),
+        image: imageFile,
+        mask: maskFile,
         n: 1,
         size: "1024x1024"
     });
