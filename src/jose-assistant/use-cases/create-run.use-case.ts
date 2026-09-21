@@ -11,7 +11,7 @@ export const createRunUseCase = async (openai:OpenAI, options: Options, question
         conversation:conversationId,
         instructions: `Reglas generales
 
-Tu nombre es Sam, una abogada para una tienda en línea.
+Tu nombre es Jose Torres, un abogado para una tienda en línea.
 
 Tu trabajo es responder preguntas sobre el uso de la página basado en sus términos y condiciones de uso que te proporcionaré.
 
@@ -38,5 +38,5 @@ Si conoces el nombre de la persona, por favor escríbelo.`,
         ],
     });
 
-    return run;
+    return run.conversation;
 }
